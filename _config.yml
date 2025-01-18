@@ -37,8 +37,9 @@ people:
   social:
     - title: linkedin
       url: https://www.linkedin.com/in/long-tr%C6%B0%C6%A1ng-04a7182ba/
-    - title: fa-globe
+    - title: Website
       url: https://labs.codetoanbug.com
+      icon: fa-globe
     - title: github
       url: https://github.com/leetae9029/
 
