@@ -20,7 +20,7 @@ function switchTheme(cssFile) {
 // 3. Lấy URL của file HTML từ hash (#slug => /posts/slug.html)
 function getPostURL() {
   const slug = window.location.hash.substring(1);
-  return slug ? `/posts/${slug}.html` : null;
+  return slug ? `/assets/${slug}.html` : null;
 }
 
 // 4. Load một post HTML
@@ -141,7 +141,7 @@ function scrollToTop() {
 // 8. Render danh sách bài và khởi tạo sections
 async function renderPostLists() {
   try {
-    const res = await fetch("/posts/posts.json", { cache: "no-store" });
+    const res = await fetch("/assets/posts.json", { cache: "no-store" });
     if (!res.ok) throw new Error("Không thể load posts.json");
     const posts = await res.json();
     allPosts = posts;
