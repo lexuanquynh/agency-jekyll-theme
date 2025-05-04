@@ -1,11 +1,5 @@
 [
   {
-     "filename": "",
-     "title": "",
-     "category": "Direct_Collaboration",
-     "image": ""
-  },
-  {
      "filename": "cve-2025-23001.html",
      "title": "CVE-2025-23001 Host Header Injection",
      "category": "CVE",
@@ -13,20 +7,20 @@
   },
   {
      "filename": "SSRF-induced-Cache-Poisoning-Logic-Bug.html",
-     "title": "SSRF-induced Cache Poisoning Logic Bug(vi)",
+     "title": "Cache Poisoning",
      "category": "Bug_Bounty",
      "image": "/images/favicon.ico"
   },
   {
      "filename": "",
      "title": "",
-     "category": "Private_Program",
+     "category": "Coding",
      "image": ""
   },
   {
      "filename": "SSRF-induced-Cache-Poisoning-Logic-Bug-translated.html",
-     "title": "SSRF-induced Cache Poisoning Logic Bug(en)",
-     "category": "Bug_Bounty",
+     "title": "Config Security Nginx",
+     "category": "Config",
      "image": "/images/favicon.ico"
   }
 ]
