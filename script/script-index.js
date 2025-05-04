@@ -88,7 +88,7 @@ function switchTheme(cssFile) {
 function getPostFromURL() {
     const hash = window.location.hash;
     const postName = hash ? hash.substring(1) : null;
-    return postName ? `/${postName}.md` : null;
+    return postName ? `/assets/${postName}.md` : null;
 }
 
 // ---------------------------------------------------------------------------
