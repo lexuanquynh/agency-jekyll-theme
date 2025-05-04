@@ -8,7 +8,7 @@
   {
      "filename": "SSRF-induced-Cache-Poisoning-Logic-Bug.html",
      "title": "Cache Poisoning",
-     "category": "Bug-Bounty",
+     "category": "Hunt Bug",
      "image": "/images/favicon.ico"
   },
   {
