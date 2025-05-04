@@ -27,45 +27,28 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <style>
-        /* Cho container thành flex, wrap và căn giữa */
 #portfolio .section-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2rem;           /* khoảng cách giữa các mục */
+  align-items: flex-start; /* quan trọng để không bị lệch hàng */
+  gap: 2rem;
   margin-top: 2rem;
 }
 
-/* Mỗi section con tự co dãn, tối đa 300px rộng, căn giữa text */
 #portfolio .section-container section {
-  flex: 1 1 300px;     /* tối thiểu 300px, tự co dãn */
-  max-width: 300px;
+  flex: 1 1 250px;
+  max-width: 250px;
+  min-height: 200px;         /* tạo chiều cao cố định để đều */
   box-sizing: border-box;
   text-align: center;
   padding: 1rem;
-}
-
-/* Style tiêu đề */
-#portfolio .section-container section h2 {
-  margin-bottom: 0.5rem;
-  font-size: 1.25rem;
-}
-
-/* Style danh sách link bên trong */
-#portfolio .section-container section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-#portfolio .section-container section ul li {
-  margin: 0.5rem 0;
-}
-#portfolio .section-container section ul li a {
-  color: #333;
-  text-decoration: none;
-}
-#portfolio .section-container section ul li a:hover {
-  text-decoration: underline;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* giữ nội dung lên đầu */
 }
     </style>
 </head>
