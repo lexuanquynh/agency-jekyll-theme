@@ -7,23 +7,29 @@
                     <h3 class="section-subheading text-muted">Our portfolio showcases a diverse range of successful projects, demonstrating our expertise in creating impactful mobile and web applications.</h3>
                 </div>
             </div>
-            <div class="row">
-            {% for post in site.posts %}
-                <div class="col-md-4 col-sm-6 portfolio-item">
-                    <a href="#portfolioModal{{ post.modal-id }}" class="portfolio-link" data-toggle="modal">
-                        <div class="portfolio-hover">
-                            <div class="portfolio-hover-content">
-                                <i class="fa fa-plus fa-3x"></i>
-                            </div>
-                        </div>
-                        <img src="img/portfolio/{{ post.thumbnail }}" class="img-responsive img-centered" alt="">
-                    </a>
-                    <div class="portfolio-caption">
-                        <h4>{{ post.title }}</h4>
-                        <p class="text-muted">{{ post.subtitle }}</p>
-                    </div>
-                </div>
-            {% endfor %}
+            <div class="site-container">
+             <aside id="toc" style="display: none;">
+                <h2>Table of Contents</h2>
+                <ul></ul>
+             </aside>
+             <!--ẩn post time với markdown content-->
+             <main style="display: none;">
+                <div id="post-time" style="display:none; font-size: 0.9em; color: #888; margin-bottom: 1em;"></div>
+                <div id="markdown-content"></div>
+             </main>
+              </div>
+            <div class="section-container">
+             <section>
+                <h2>🛡️ My CVE Reports</h2>
+                <ul id="cve-list"></ul>
+             </section>
+             <section>
+                <h2>🐞 Bug Bounty</h2>
+                <ul id="bugbounty-list"></ul>
+             </section>
             </div>
         </div>
     </section>
+
+      <script src="/script/components-index.js"></script>
+      <script src="/script/script-index.js"></script>
