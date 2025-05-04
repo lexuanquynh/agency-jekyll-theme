@@ -463,7 +463,7 @@ function createCopyLinkIcon(slug) {
 // ✅ Hàm render chính
 async function renderPostLists() {
     try {
-        const res = await fetch("/posts/posts.json", {
+        const res = await fetch("/script/posts.json", {
             cache: "no-store"
         });
         if (!res.ok) throw new Error("Không thể load posts.json");
