@@ -1,3 +1,5 @@
+exclude:
+  - "*.md"
 url: "https://starpxapac.com"
 baseurl: ""
 
