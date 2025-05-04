@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
-    const response = await fetch('/posts/posts.json', { cache: 'no-store' });
+    const response = await fetch('/assets/posts.json', { cache: 'no-store' });
     if (!response.ok) throw new Error('Không thể load posts.json');
     const posts = await response.json();
 
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       items.forEach(post => {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `/posts/${post.filename}`;   // redirect thẳng đến file .html
+        a.href = `/assets/${post.filename}`;   // redirect thẳng đến file .html
         a.textContent = post.title;
         li.appendChild(a);
         ul.appendChild(li);
