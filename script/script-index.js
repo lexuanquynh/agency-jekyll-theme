@@ -91,6 +91,20 @@ function getPostFromURL() {
     return postName ? `/assets/${postName}.md` : null;
 }
 
+// Lấy đường dẫn tới bài viết
+const postURL = getPostFromURL();
+
+if (postURL) {
+    // Sử dụng fetch để lấy nội dung từ file markdown
+    fetch(postURL)
+        .then(response => response.text())  // Đọc nội dung từ file markdown
+        .then(data => {
+            console.log(data);  // Hiển thị nội dung của bài viết
+            // Bạn có thể xử lý hoặc hiển thị dữ liệu tại đây
+        })
+        .catch(error => console.error('Error fetching post:', error));
+}
+
 // ---------------------------------------------------------------------------
 
 // 4. Load Markdown từ file .md
