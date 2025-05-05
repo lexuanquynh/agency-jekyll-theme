@@ -3,13 +3,13 @@
      "filename": "cve-2025-23001.html",
      "title": "CVE-2025-23001 Host Header Injection",
      "category": "CVE",
-     "image": "/images/favicon.ico"
+     "image": ""
   },
   {
      "filename": "cache-posoning-variant.html",
      "title": "Cache Poisoning",
      "category": "Hunt Bug",
-     "image": "/images/favicon.ico"
+     "image": ""
   },
   {
      "filename": "",
