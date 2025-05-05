@@ -6,7 +6,7 @@
      "image": "/images/favicon.ico"
   },
   {
-     "filename": "SSRF-induced-Cache-Poisoning-Logic-Bug.html",
+     "filename": "cache-posoning-variant.html",
      "title": "Cache Poisoning",
      "category": "Hunt Bug",
      "image": "/images/favicon.ico"
